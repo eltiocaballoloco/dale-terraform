@@ -21,10 +21,10 @@ vm_guest_id            = "ubuntu64Guest"
 vsphere_unverified_ssl = true
 vm_datastore           = "/ha-datacenter/datastore/datastore1"
 vm_network             = "VM Network"
-dns_server_list        = ["192.168.3.1", "8.8.8.8"]
-name                   = "k8s-master-node-1-1-srv1"
-ipv4_address           = "192.168.3.234"
-ipv4_gateway           = "192.168.3.1"
+dns_server_list        = ["172.10.2.1", "8.8.8.8"]
+name                   = "hostname-vm"
+ipv4_address           = "172.10.2.234"
+ipv4_gateway           = "172.10.2.1"
 ipv4_netmask           = "24"
 iso_datastore_path     = "ISOs/ubuntu-24.04.1-live-server-amd64.iso"
 ```
