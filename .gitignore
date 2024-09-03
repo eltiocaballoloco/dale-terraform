@@ -31,6 +31,9 @@ Temporary Items
 **/secrets.tfvars/*
 **/terraform.tfstate/*
 **/terraform.tfstate.backup/*
+**/terraform_plan.out/*
+**/.terraform/*
+**/.terraform.lock.hcl/*
 
 # .tfstate files
 *.tfstate
