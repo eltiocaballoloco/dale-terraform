@@ -1,108 +1,99 @@
-terraform {
-  required_providers {
-    vsphere = {
-      source  = "hashicorp/vsphere"
-      version = "2.2.0"
-    }
-  }
-}
-
 provider "vsphere" {
-  user                 = var.vsphere_user
-  password             = var.vsphere_password
-  vsphere_server       = var.vsphere_vcenter
+  user           = var.vsphere_user
+  password       = var.vsphere_password
+  vsphere_server = var.vsphere_vcenter
+
   allow_unverified_ssl = var.vsphere_unverified_ssl
 }
 
-locals {
-  templatevars = {
-    name         = var.name
-    ipv4_address = var.ipv4_address
-    ipv4_gateway = var.ipv4_gateway
-    dns_server_1 = var.dns_server_list[0]
-    dns_server_2 = var.dns_server_list[1]
-    public_key   = var.public_key
-    ssh_username = var.ssh_username
-  }
-}
-
 data "vsphere_datacenter" "dc" {
-  name = var.vsphere_datacenter
+  name = "ha-datacenter"
 }
 
 data "vsphere_datastore" "datastore" {
-  name          = var.vm_datastore
-  datacenter_id = data.vsphere_datacenter.dc.id
+  name          = "datastore1"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
-data "vsphere_compute_cluster" "cluster" {
-  name          = var.vsphere_cluster
-  datacenter_id = data.vsphere_datacenter.dc.id
-}
+data "vsphere_resource_pool" "pool" {}
 
-data "vsphere_network" "network" {
-  name          = var.vm_network
-  datacenter_id = data.vsphere_datacenter.dc.id
-}
-
-data "vsphere_virtual_machine" "template" {
-  name          = "/${var.vsphere_datacenter}/vm/${var.vm_template_folder}/${var.vm_template_name}"
-  datacenter_id = data.vsphere_datacenter.dc.id
+data "vsphere_network" "mgmt_lan" {
+  name          = "VM Network"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  name                  = var.name
-  resource_pool_id      = data.vsphere_compute_cluster.cluster.resource_pool_id
-  datastore_id          = data.vsphere_datastore.datastore.id
-  num_cpus              = var.cpu
-  num_cores_per_socket  = var.cores_per_socket
-  memory                = var.ram
-  guest_id              = var.vm_guest_id
+  name             = var.name
+  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
+  datastore_id     = "${data.vsphere_datastore.datastore.id}"
+
+  num_cpus         = var.cpu
+  memory           = var.ram
+
+  guest_id         = var.vm_guest_id
 
   network_interface {
-    network_id   = data.vsphere_network.network.id
-    adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
+    network_id   = "${data.vsphere_network.mgmt_lan.id}"
+    adapter_type = "vmxnet3"
   }
 
   disk {
-    label            = "${var.name}-disk"
-    thin_provisioned = data.vsphere_virtual_machine.template.disks[0].thin_provisioned
-    eagerly_scrub    = data.vsphere_virtual_machine.template.disks[0].eagerly_scrub
-    size             = var.disksize == "" ? data.vsphere_virtual_machine.template.disks[0].size : var.disksize 
+    label            = "disk0"
+    size             = var.disksize
+    eagerly_scrub    = false
+    thin_provisioned = true
   }
 
-  clone {
-    template_uuid = data.vsphere_virtual_machine.template.id
-
-    customize {
-      linux_options {
-        host_name = var.name
-        domain    = var.vm_domain
-      }
-
-      network_interface {
-        ipv4_address = var.ipv4_address
-        ipv4_netmask = var.ipv4_netmask
-      }
-
-      ipv4_gateway = var.ipv4_gateway
-    }
+  cdrom {
+    datastore_id = "${data.vsphere_datastore.datastore.id}"
+    path         = var.iso_datastore_path
   }
 
-  // Correct usage of extra_config for custom metadata and userdata
+  # Ensure the VM uses BIOS firmware
+  firmware = "bios"
+
+  # Cloud-init configuration (if applicable)
   extra_config = {
-    "guestinfo.metadata"          = base64encode(templatefile("${path.module}/templates/metadata.yaml", locals.templatevars))
-    "guestinfo.metadata.encoding" = "base64"
-    "guestinfo.userdata"          = base64encode(templatefile("${path.module}/templates/userdata.yaml", locals.templatevars))
-    "guestinfo.userdata.encoding" = "base64"
+    "guestinfo.userdata" = base64encode(<<EOF
+#cloud-config
+users:
+  - name: ${var.ssh_username}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh-authorized-keys:
+      - ${var.public_key}
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: ${var.ssh_password}
+    
+# Set static IP configuration
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: false
+      addresses:
+        - ${var.ipv4_address}/${var.ipv4_netmask}
+      gateway4: ${var.ipv4_gateway}
+      nameservers:
+        addresses: ${jsonencode(var.dns_server_list)}
+EOF
+    )
   }
 
-  lifecycle {
-    ignore_changes = [
-      annotation,
-      clone[0].template_uuid,
-      clone[0].customize[0].dns_server_list,
-      clone[0].customize[0].network_interface[0]
+  # Wait for the VM to be created before provisioning
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /home/${var.ssh_username}/.ssh",
+      "echo '${var.public_key}' >> /home/${var.ssh_username}/.ssh/authorized_keys",
+      "chown -R ${var.ssh_username}:${var.ssh_username} /home/${var.ssh_username}/.ssh",
+      "chmod 600 /home/${var.ssh_username}/.ssh/authorized_keys"
     ]
+
+    connection {
+      type        = "ssh"
+      user        = var.ssh_username # from secrets
+      private_key = file(var.private_key_path) # from secrets
+      host        = vsphere_virtual_machine.vm.default_ip_address
+    }
   }
 }

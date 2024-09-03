@@ -1,119 +1,91 @@
 variable "vsphere_user" {
-  description = "vSphere API username"
-  type        = string
-  sensitive   = true
+  description = "The vSphere user"
 }
 
 variable "vsphere_password" {
-  description = "vSphere API password"
-  type        = string
+  description = "The vSphere password"
   sensitive   = true
 }
 
 variable "vsphere_vcenter" {
-  description = "vSphere vCenter server address"
-  type        = string
-  sensitive   = true
+  description = "The vSphere vCenter server"
 }
 
-variable "public_key" {
-  description = "SSH public key to be used for authentication"
-  type        = string
-  sensitive   = true
+variable "esxi_host_name" {
+  description = "ESXi hostname"
 }
 
-variable "ssh_username" {
-  description = "Username for SSH access to the VM"
-  type        = string
-  sensitive   = true
+variable "vsphere_unverified_ssl" {
+  description = "Allow unverified SSL certificates"
+  default     = true
+}
+
+variable "vm_datastore" {
+  description = "The datastore where the VM will be stored"
+}
+
+variable "vm_network" {
+  description = "The network to connect the VM"
+}
+
+variable "vm_guest_id" {
+  description = "The guest ID, e.g., 'ubuntu64Guest'"
+  default     = "ubuntu64Guest"
+}
+
+variable "name" {
+  description = "The name of the VM"
 }
 
 variable "cpu" {
-  description = "Number of CPUs for the VM"
-  type        = number
+  description = "Number of vCPUs"
 }
 
 variable "cores_per_socket" {
   description = "Number of cores per socket"
-  type        = number
 }
 
 variable "ram" {
-  description = "Memory for the VM in MB"
-  type        = number
+  description = "Amount of RAM in MB"
 }
 
 variable "disksize" {
-  description = "Disk size in GB for the VM"
-  type        = number
-}
-
-variable "vm_guest_id" {
-  description = "Type of guest OS"
-  type        = string
-}
-
-variable "vsphere_unverified_ssl" {
-  description = "Allow unverified SSL for vSphere connection"
-  type        = bool
-}
-
-variable "vsphere_datacenter" {
-  description = "Datacenter in vSphere"
-  type        = string
-}
-
-variable "vsphere_cluster" {
-  description = "Cluster in the datacenter"
-  type        = string
-}
-
-variable "vm_datastore" {
-  description = "Datastore for the VM"
-  type        = string
-}
-
-variable "vm_network" {
-  description = "Network label for the VM"
-  type        = string
-}
-
-variable "vm_domain" {
-  description = "Domain for the VM"
-  type        = string
+  description = "Disk size in GB"
 }
 
 variable "dns_server_list" {
-  description = "List of DNS servers for the VM"
+  description = "List of DNS servers"
   type        = list(string)
 }
 
-variable "name" {
-  description = "Name of the VM"
-  type        = string
-}
-
 variable "ipv4_address" {
-  description = "Static IPv4 address for the VM"
-  type        = string
+  description = "IPv4 address of the VM"
 }
 
 variable "ipv4_gateway" {
-  description = "Gateway for the VM's subnet"
-  type        = string
+  description = "IPv4 gateway for the VM"
 }
 
 variable "ipv4_netmask" {
   description = "Netmask for the VM's IPv4 address"
-  type        = string
 }
 
-variable vm_template_folder {
-  description = "Folder where the VM template is stored"
-  type        = string
+variable "iso_datastore_path" {
+  description = "The path to the ISO file in the datastore"
 }
 
-variable "vm_template_name" {
-  description = "Template name to clone the VM from"
-  type        = string
+variable "public_key" {
+  description = "The SSH public key to be added to the VM"
+}
+
+variable "ssh_username" {
+  description = "The username for SSH access"
+}
+
+variable "ssh_password" {
+  description = "The password for SSH access"
+}
+
+variable "private_key_path" {
+  description = "The path to the private key used for SSH"
 }
