@@ -86,6 +86,10 @@ variable "ssh_password" {
   description = "The password for SSH access"
 }
 
+variable "new_ssh_password" {
+  description = "The new password for SSH access"
+}
+
 variable "private_key_path" {
   description = "The path to the private key used for SSH"
 }

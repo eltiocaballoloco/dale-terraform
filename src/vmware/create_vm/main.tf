@@ -52,48 +52,86 @@ resource "vsphere_virtual_machine" "vm" {
   # Ensure the VM uses BIOS firmware
   firmware = "bios"
 
-  # Cloud-init configuration (if applicable)
-  extra_config = {
-    "guestinfo.userdata" = base64encode(<<EOF
-#cloud-config
-users:
-  - name: ${var.ssh_username}
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    ssh-authorized-keys:
-      - ${var.public_key}
-    shell: /bin/bash
-    lock_passwd: false
-    passwd: ${var.ssh_password}
-    
-# Set static IP configuration
-network:
-  version: 2
-  ethernets:
-    eth0:
-      dhcp4: false
-      addresses:
-        - ${var.ipv4_address}/${var.ipv4_netmask}
-      gateway4: ${var.ipv4_gateway}
-      nameservers:
-        addresses: ${jsonencode(var.dns_server_list)}
-EOF
-    )
-  }
+  #   # Cloud-init configuration (if applicable)
+  #   extra_config = {
+  #     "guestinfo.userdata" = base64encode(<<EOF
+  # #cloud-config
+  # autoinstall:
+  #   apt:
+  #     disable_components: []
+  #     fallback: offline-install
+  #     geoip: true
+  #     mirror-selection:
+  #       primary:
+  #       - country-mirror
+  #       - arches: &id001
+  #         - amd64
+  #         - i386
+  #         uri: http://archive.ubuntu.com/ubuntu/
+  #       - arches: &id002
+  #         - s390x
+  #         - arm64
+  #         - armhf
+  #         - powerpc
+  #         - ppc64el
+  #         - riscv64
+  #         uri: http://ports.ubuntu.com/ubuntu-ports
+  #     preserve_sources_list: false
+  #     security:
+  #     - arches: *id001
+  #       uri: http://security.ubuntu.com/ubuntu/
+  #     - arches: *id002
+  #       uri: http://ports.ubuntu.com/ubuntu-ports
+  #   codecs:
+  #     install: false
+  #   drivers:
+  #     install: false
+  #   identity:
+  #     hostname: guest
+  #     password: $6$JR..jbdfr0SRImOW$nxbruEGeGzx.n38qkN//1VIVnAKTTsN6Pu8BG.f4S6PBQnIPynjuaAa2ajDXdn7t5rG1h6SpThnHeCIzTAz1K0
+  #     realname: guest
+  #     username: guest
+  #   kernel:
+  #     package: linux-generic
+  #   keyboard:
+  #     layout: it
+  #     toggle: null
+  #     variant: ''
+  #   locale: en_US.UTF-8
+  #   network:
+  #     ethernets:
+  #       all:
+  #         dhcp4: true
+  #     version: 2
+  #   oem:
+  #     install: auto
+  #   source:
+  #     id: ubuntu-server
+  #     search_drivers: false
+  #   ssh:
+  #     allow-pw: true
+  #     authorized-keys: []
+  #     install-server: true
+  #   updates: security
+  #   version: 1
+  # EOF
+  #     )
+  #   }
 
-  # Wait for the VM to be created before provisioning
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir -p /home/${var.ssh_username}/.ssh",
-      "echo '${var.public_key}' >> /home/${var.ssh_username}/.ssh/authorized_keys",
-      "chown -R ${var.ssh_username}:${var.ssh_username} /home/${var.ssh_username}/.ssh",
-      "chmod 600 /home/${var.ssh_username}/.ssh/authorized_keys"
-    ]
+  # # Wait for the VM to be created before provisioning
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "mkdir -p /home/${var.ssh_username}/.ssh",
+  #     "echo '${var.public_key}' >> /home/${var.ssh_username}/.ssh/authorized_keys",
+  #     "chown -R ${var.ssh_username}:${var.ssh_username} /home/${var.ssh_username}/.ssh",
+  #     "chmod 600 /home/${var.ssh_username}/.ssh/authorized_keys"
+  #   ]
 
-    connection {
-      type        = "ssh"
-      user        = var.ssh_username # from secrets
-      private_key = file(var.private_key_path) # from secrets
-      host        = vsphere_virtual_machine.vm.default_ip_address
-    }
-  }
+  #   connection {
+  #     type        = "ssh"
+  #     user        = var.ssh_username # from secrets
+  #     password    = var.ssh_password # from secrets
+  #     host        = vsphere_virtual_machine.vm.default_ip_address
+  #   }
+  # }
 }

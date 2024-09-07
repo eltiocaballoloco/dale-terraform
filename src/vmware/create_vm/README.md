@@ -1,13 +1,14 @@
 # secrets.tfvars
 ```bash
-vsphere_user     = "vmware-usr"
-vsphere_password = "vmware-pwd"
-vsphere_vcenter  = "vmware-srv1.domain.com"
+vsphere_user     = "v-sphere-usr"
+vsphere_password = "v-sphere-pwd"
+vsphere_vcenter  = "v-sphere.dalecosta.com"
 esxi_host_name   = "srv1.lan"
-public_key       = "ssh-rsa ABCDE1234"
-private_key_path = "/home/youruser/.ssh/id_rsa"
-ssh_username     = "ssh-usr"
-ssh_password     = "ssh-pwd"
+public_key       = "ssh-rsa ABCDEf4567"
+private_key_path = "/path/to/priv/key/.ssh/id_rsa"
+ssh_username     = "ssh_usr"
+ssh_password     = "ssh_pwd"
+new_ssh_password = "new_pwd"
 ```
 
 
@@ -15,16 +16,16 @@ ssh_password     = "ssh-pwd"
 ```bash
 cpu                    = 4
 cores_per_socket       = 1
-ram                    = 32768 # in MB
-disksize               = 200  # in GB
+ram                    = 65536 # in MB
+disksize               = 500  # in GB
 vm_guest_id            = "ubuntu64Guest"
 vsphere_unverified_ssl = true
 vm_datastore           = "/ha-datacenter/datastore/datastore1"
 vm_network             = "VM Network"
-dns_server_list        = ["172.10.2.1", "8.8.8.8"]
-name                   = "hostname-vm"
-ipv4_address           = "172.10.2.234"
-ipv4_gateway           = "172.10.2.1"
+dns_server_list        = ["172.18.1.1", "8.8.8.8"]
+name                   = "k8s-worker-node-2-2-srv1"
+ipv4_address           = "172.18.1.234"
+ipv4_gateway           = "172.18.1.1"
 ipv4_netmask           = "24"
 iso_datastore_path     = "ISOs/ubuntu-24.04.1-live-server-amd64.iso"
 ```
