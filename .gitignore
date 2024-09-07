@@ -34,6 +34,7 @@ Temporary Items
 **/terraform_plan.out/*
 **/.terraform/*
 **/.terraform.lock.hcl/*
+**/.test.yaml/*
 
 # .tfstate files
 *.tfstate
