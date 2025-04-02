@@ -38,12 +38,12 @@ terraform init
 ```
 
 ```bash
-terraform plan \                                                                                              
+terraform plan \
   -var-file="/path/to/repo/dale-terraform/src/vmware/create_vm/terraform.tfvars" \
   -var-file="/path/to/repo/dale-terraform/src/vmware/create_vm/secrets.tfvars" \
-  -out=“terraform_plan.out"
+  -out="terraform_plan.out"
 ```
 
 ```bash
-terraform apply "terraform_plan.out"
+terraform apply "/path/to/repo/dale-terraform/src/vmware/create_vm/terraform_plan.out"
 ```
