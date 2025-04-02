@@ -35,7 +35,7 @@ iso_datastore_path     = "ISOs/ubuntu-24.04.1-live-server-amd64.iso"
 
 ```bash
 terraform init
-```bash
+```
 
 ```bash
 terraform plan \                                                                                              
